@@ -92,6 +92,13 @@ public extension ASCollectionView
 		return this
 	}
 
+    /// Set a refresingControl state
+    func refresing(_ refreshing: Bool) -> Self {
+        var this = self
+        this.isRefreshing = refreshing
+        return this
+    }
+
 	/// Set whether the ASCollectionView should always allow bounce vertically
 	func alwaysBounceVertical(_ alwaysBounce: Bool = true) -> Self
 	{

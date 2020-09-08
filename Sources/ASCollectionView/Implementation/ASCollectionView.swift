@@ -34,6 +34,8 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 
 	internal var onPullToRefresh: ((_ endRefreshing: @escaping (() -> Void)) -> Void)?
 
+    internal var isRefreshing: Bool?
+
 	internal var alwaysBounceVertical: Bool = false
 	internal var alwaysBounceHorizontal: Bool = false
 
@@ -494,7 +496,26 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 				refreshControl.addTarget(self, action: #selector(collectionViewDidPullToRefresh), for: .valueChanged)
 				cv.refreshControl = refreshControl
 			}
+            configureRefreshControling(for: cv)
 		}
+
+        func configureRefreshControling(for cv: UICollectionView) {
+            guard let isRefreshing = parent.isRefreshing else { return }
+            if cv.refreshControl == nil
+            {
+                let refreshControl = UIRefreshControl()
+                refreshControl.addTarget(self, action: #selector(collectionViewDidPullToRefresh), for: .valueChanged)
+                cv.refreshControl = refreshControl
+            }
+            if isRefreshing
+            {
+                cv.refreshControl?.beginRefreshing()
+            }
+            else
+            {
+                cv.refreshControl?.endRefreshing()
+            }
+        }
 
 		@objc
 		public func collectionViewDidPullToRefresh()
