@@ -207,3 +207,27 @@ public extension ASCollectionView
 		SelfSizingWrapper(content: self, shrinkDirection: dimension, isEnabled: isEnabled, expandToFitMode: true)
 	}
 }
+
+@available(iOS 13.0, *)
+public extension ASCollectionView
+{
+    func stickyHeader<Content: View>(
+        height: CGFloat = 0.0,
+        minimumHeight: CGFloat = 0.0,
+        mode: StickyHeaderMode = .fill,
+        progress: Binding<CGFloat>,
+        _ content: @escaping () -> Content
+    ) -> Self {
+        var this = self
+        let setting = StickyHeaderSetting(
+            height: height,
+            minimumHeight: minimumHeight,
+            mode: mode,
+            content: { AnyView(content()) },
+            progress: progress
+        )
+        this.stickyHeaderSetting = setting
+
+        return this
+    }
+}

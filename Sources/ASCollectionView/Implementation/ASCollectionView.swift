@@ -53,6 +53,8 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 
 	internal var dodgeKeyboard: Bool = true
 
+    internal var stickyHeaderSetting: StickyHeaderSetting?
+
 	// MARK: Environment variables
 
 	// SwiftUI environment
@@ -88,6 +90,7 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 		context.coordinator.updateContent(collectionViewController.collectionView, transaction: context.transaction)
 		context.coordinator.updateLayout()
 		context.coordinator.configureRefreshControl(for: collectionViewController.collectionView)
+        context.coordinator.updateStickyHeader(setting: stickyHeaderSetting, for: collectionViewController.collectionView)
 		context.coordinator.setupKeyboardObservers()
 #if DEBUG
 		debugOnly_checkHasUniqueSections()
@@ -120,7 +123,7 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 
 	// MARK: Coordinator Class
 
-	public class Coordinator: ASCollectionViewCoordinator
+    public class Coordinator: NSObject, ASCollectionViewCoordinator
 	{
 		var parent: ASCollectionView
 		var delegate: ASCollectionViewDelegate?
@@ -1039,4 +1042,24 @@ public enum ASCollectionViewScrollPosition
 	case left
 	case right
 	case indexPath(_: IndexPath, positionOnScreen: UICollectionView.ScrollPosition = .centeredVertically, extraOffset: CGPoint = .zero)
+}
+
+@available(iOS 13.0, *)
+extension ASCollectionView.Coordinator: StickyHeaderDelegate {
+    func updateStickyHeader(setting: StickyHeaderSetting?, for collectionView: UICollectionView)
+    {
+        guard let setting = setting else { return }
+        collectionView.stickyHeader.height = setting.height
+        collectionView.stickyHeader.minimumHeight = setting.minimumHeight
+        collectionView.stickyHeader.mode = setting.mode
+        collectionView.stickyHeader.delegate = self
+        let vc = UIHostingController(rootView: setting.content())
+        vc.view.backgroundColor = .clear
+        collectionView.stickyHeader.view = vc.view
+    }
+
+    public func stickyHeaderDidScroll(_ stickyHeader: StickyHeader) {
+        guard let setting = self.parent.stickyHeaderSetting else { return }
+        setting.progress = stickyHeader.progress
+    }
 }
