@@ -205,7 +205,9 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 		func updateCollectionViewContentInsets(_ collectionView: UICollectionView)
 		{
 			assignIfChanged(collectionView, \.contentInsetAdjustmentBehavior, newValue: delegate?.collectionViewContentInsetAdjustmentBehavior ?? .automatic)
-//			assignIfChanged(collectionView, \.contentInset, newValue: adaptiveContentInsets)
+            if parent.stickyHeaderSetting == nil {
+                assignIfChanged(collectionView, \.contentInset, newValue: adaptiveContentInsets)
+            }
 		}
 
 		func setupDataSource(forCollectionView cv: UICollectionView)
