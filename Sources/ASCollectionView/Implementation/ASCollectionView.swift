@@ -13,6 +13,7 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 
 	public typealias OnScrollCallback = ((_ contentOffset: CGPoint, _ contentSize: CGSize) -> Void)
 	public typealias OnReachedBoundaryCallback = ((_ boundary: Boundary) -> Void)
+  public typealias OnIntrospectCollectionView = ((_ collectionView: UICollectionView) -> Void)
 
 	// MARK: Key variables
 
@@ -53,7 +54,9 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 
 	internal var dodgeKeyboard: Bool = true
 
+    // Custom
     internal var stickyHeaderSetting: StickyHeaderSetting?
+    internal var onIntrospectCollectionView: OnIntrospectCollectionView?
 
 	// MARK: Environment variables
 
@@ -92,6 +95,7 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 		context.coordinator.configureRefreshControl(for: collectionViewController.collectionView)
         context.coordinator.updateStickyHeader(setting: stickyHeaderSetting, for: collectionViewController.collectionView)
 		context.coordinator.setupKeyboardObservers()
+    context.coordinator.updateCollectionViewForIntrospecting(collectionView: collectionViewController.collectionView)
 #if DEBUG
 		debugOnly_checkHasUniqueSections()
 #endif
@@ -1048,8 +1052,7 @@ public enum ASCollectionViewScrollPosition
 
 @available(iOS 13.0, *)
 extension ASCollectionView.Coordinator: StickyHeaderDelegate {
-    func updateStickyHeader(setting: StickyHeaderSetting?, for collectionView: UICollectionView)
-    {
+    func updateStickyHeader(setting: StickyHeaderSetting?, for collectionView: UICollectionView) {
         guard let setting = setting else { return }
         collectionView.stickyHeader.height = setting.height
         collectionView.stickyHeader.minimumHeight = setting.minimumHeight
@@ -1063,5 +1066,12 @@ extension ASCollectionView.Coordinator: StickyHeaderDelegate {
     public func stickyHeaderDidScroll(_ stickyHeader: StickyHeader) {
         guard let setting = self.parent.stickyHeaderSetting else { return }
         setting.progress = stickyHeader.progress
+    }
+}
+
+@available(iOS 13.0, *)
+extension ASCollectionView.Coordinator {
+    func updateCollectionViewForIntrospecting(collectionView: UICollectionView) {
+        parent.onIntrospectCollectionView?(collectionView)
     }
 }

@@ -230,4 +230,10 @@ public extension ASCollectionView
 
         return this
     }
+
+    func introspect(_ customize: @escaping (UICollectionView) -> Void) -> Self {
+        var this = self
+        this.onIntrospectCollectionView = customize
+        return this
+    }
 }
