@@ -58,13 +58,6 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
     internal var stickyHeaderSetting: StickyHeaderSetting?
     internal var onIntrospectCollectionView: OnIntrospectCollectionView?
 
-	// MARK: Environment variables
-
-	// SwiftUI environment
-	@Environment(\.editMode) private var editMode
-
-	@Environment(\.invalidateCellLayout) var invalidateParentCellLayout // Call this if using content size binding (nested inside another ASCollectionView)
-
 	public func makeUIViewController(context: Context) -> AS_CollectionViewController
 	{
 		context.coordinator.parent = self
@@ -200,10 +193,6 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 			assignIfChanged(collectionView, \.showsHorizontalScrollIndicator, newValue: parent.horizontalScrollIndicatorEnabled)
 			assignIfChanged(collectionView, \.keyboardDismissMode, newValue: .onDrag)
 			updateCollectionViewContentInsets(collectionView)
-
-			let isEditing = parent.editMode?.wrappedValue.isEditing ?? false
-			assignIfChanged(collectionView, \.allowsSelection, newValue: isEditing)
-			assignIfChanged(collectionView, \.allowsMultipleSelection, newValue: isEditing)
 		}
 
 		func updateCollectionViewContentInsets(_ collectionView: UICollectionView)
@@ -860,10 +849,6 @@ public struct ASCollectionView<SectionID: Hashable>: UIViewControllerRepresentab
 			let firstSize = lastContentSize == .zero
 			lastContentSize = cv.contentSize
 			parent.contentSizeTracker?.contentSize = size
-
-			DispatchQueue.main.async {
-				self.parent.invalidateParentCellLayout?(!firstSize)
-			}
 		}
 
 		// MARK: Variables used for the custom prefetching implementation
@@ -883,7 +868,13 @@ extension ASCollectionView.Coordinator
 	{
 		parent.onScrollCallback?(scrollView.contentOffset, scrollView.contentSizePlusInsets)
 		checkIfReachedBoundary(scrollView)
+
+        test(scrollView)
 	}
+
+    func test(_ scrollView: UIScrollView) {
+        print(scrollView.contentSize.height, scrollView.contentSizePlusInsets.height, scrollView.frame.size.height, scrollView.contentOffset.y)
+    }
 
 	func checkIfReachedBoundary(_ scrollView: UIScrollView)
 	{
